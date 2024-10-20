@@ -8,61 +8,48 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Mapa {
     private final int size;
-    private final ConcurrentHashMap<String, int[]> ubicaciones;
-
-    /**
-     * Constructor con el tamaño del mapa
-     * @param size del mapa
-     */
+    private final String[][] mapa;
     public Mapa(int size) {
         this.size = size;
-        this.ubicaciones = new ConcurrentHashMap<>();
+        this.mapa = new String[size][size];
+        inicializarMapa();
     }
-
-    /**
-     * Metodo para generar posición aleatoria del monstruo
-     * @return posicion
-     */
-    public int[] generarUbicacion() {
+    private void inicializarMapa() {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                mapa[i][j] = ".";
+            }
+        }
+    }
+    public synchronized void moverPersonaje(String nombre, int[] nuevaUbicacion) {
+        limpiarMapaDePersonaje(nombre);  // Elimina al personaje de su ubicación anterior
+        mapa[nuevaUbicacion[0]][nuevaUbicacion[1]] = nombre.equals("Monstruo1") ? "M" : "C";
+    }
+    private void limpiarMapaDePersonaje(String nombre) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (mapa[i][j].equals(nombre.equals("Monstruo1") ? "M" : "C")) {
+                    mapa[i][j] = ".";
+                }
+            }
+        }
+    }
+    public synchronized int[] generarUbicacion() {
         Random rand = new Random();
         int x = rand.nextInt(size);
         int y = rand.nextInt(size);
         return new int[]{x, y};
     }
-
-
-    /**
-     * Metodo que mueve al personaje por el mapa
-     * @param nombre
-     * @param nuevaUbicacion
-     */
-    public void moverPersonaje(String nombre, int[] nuevaUbicacion) {
-        ubicaciones.put(nombre, nuevaUbicacion);
-    }
-
-    /**
-     * Determina si hay un encuentro de cazador-monstruo en el mapa
-     * @param nombreCazador cazador
-     * @param nombreMonstruo monstruo
-     * @return verdadero o falso
-     */
-    public boolean hayEncuentro(String nombreCazador, String nombreMonstruo) {
-        int[] ubicacionCazador = ubicaciones.get(nombreCazador);
-        int[] ubicacionMonstruo = ubicaciones.get(nombreMonstruo);
-
-        return ubicacionCazador != null && ubicacionMonstruo != null
-                && ubicacionCazador[0] == ubicacionMonstruo[0]
-                && ubicacionCazador[1] == ubicacionMonstruo[1];
-    }
-
-    /**
-     * Metodo para mostrar el mapa
-     */
-    public void mostrarMapa() {
-        for (String nombre : ubicaciones.keySet()) {
-            int[] ubicacion = ubicaciones.get(nombre);
-            System.out.println(nombre + " está en (" + ubicacion[0] + ", " + ubicacion[1] + ")");
+    public synchronized void mostrarMapa() {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                System.out.print(mapa[i][j] + "  ");
+            }
+            System.out.println();
         }
         System.out.println();
+    }
+    public synchronized boolean hayEncuentro(int[] ubicacionCazador, int[] ubicacionMonstruo) {
+        return ubicacionCazador[0] == ubicacionMonstruo[0] && ubicacionCazador[1] == ubicacionMonstruo[1];
     }
 }
